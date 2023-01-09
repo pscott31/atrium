@@ -1,0 +1,44 @@
+<!DOCTYPE html><html data-theme="dark" lang="en"><head>
+    <title>Atrium</title>
+    <!-- <link data-trunk rel="css" href="static/bulma.min.css" /> -->
+    <link rel="stylesheet" href="/index-4ecbb45f4250c7f6.css">
+    <!-- <link rel="stylesheet" href="https://unpkg.com/bulmaswatch/darkly/bulmaswatch.min.css"> -->
+
+    <!-- <link data-trunk rel="css" href="static/daisyui-2.46.1-full.css" /> -->
+    <!-- <link data-trunk rel="css" href="static/tailwind.css" /> -->
+    <!-- <script data-trunk src="static/tailwind.js"></script> -->
+    <!-- <script src="https://cdn.tailwindcss.com"></script> -->
+
+<link rel="preload" href="/frontend-8d330d2ee3be35f9_bg.wasm" as="fetch" type="application/wasm" crossorigin="">
+<link rel="modulepreload" href="/frontend-8d330d2ee3be35f9.js"></head>
+
+<body>
+
+<script type="module">import init from '/frontend-8d330d2ee3be35f9.js';init('/frontend-8d330d2ee3be35f9_bg.wasm');</script><script>(function () {
+    var protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    var url = protocol + '//' + window.location.host + '/_trunk/ws';
+    var poll_interval = 5000;
+    var reload_upon_connect = () => {
+        window.setTimeout(
+            () => {
+                // when we successfully reconnect, we'll force a
+                // reload (since we presumably lost connection to
+                // trunk due to it being killed, so it will have
+                // rebuilt on restart)
+                var ws = new WebSocket(url);
+                ws.onopen = () => window.location.reload();
+                ws.onclose = reload_upon_connect;
+            },
+            poll_interval);
+    };
+
+    var ws = new WebSocket(url);
+    ws.onmessage = (ev) => {
+        const msg = JSON.parse(ev.data);
+        if (msg.reload) {
+            window.location.reload();
+        }
+    };
+    ws.onclose = reload_upon_connect;
+})()
+</script></body></html>

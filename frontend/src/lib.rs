@@ -1,6 +1,7 @@
-pub use protos::greeter_client::GreeterClient;
-pub use protos::HelloRequest;
+pub mod proto;
+pub use proto::greeter_client::GreeterClient;
+pub use proto::HelloRequest;
 
-pub mod protos {
-    tonic::include_proto!("atrium");
-}
+// pub mod protos {
+//     tonic::include_proto!("atrium");
+// }

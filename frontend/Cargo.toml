@@ -8,10 +8,11 @@ edition = "2021"
 [dependencies]
 tonic-web-wasm-client = "0.3.2"
 wasm-bindgen-futures = "0.4.33"
-yew = { git = "https://github.com/yewstack/yew/", features = ["csr"] }
+yew = { version = "0.20", features = ["csr"] }
 # backend = {path="../backend"}
 tonic = { version = "0.8.3", default-features = false, features=["codegen", "prost"] }
 prost = "0.11.5"
+ybc = {path="/home/scotty/sw/ybc"}
 
 
 [build-dependencies]
