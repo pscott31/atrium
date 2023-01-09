@@ -1,0 +1,20 @@
+[package]
+name = "frontend"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+tonic-web-wasm-client = "0.3.2"
+wasm-bindgen-futures = "0.4.33"
+yew = { git = "https://github.com/yewstack/yew/", features = ["csr"] }
+# backend = {path="../backend"}
+tonic = { version = "0.8.3", default-features = false, features=["codegen", "prost"] }
+prost = "0.11.5"
+
+
+[build-dependencies]
+tonic-build = { version = "0.8.4", default-features = false, features = [
+    "prost",
+] }
