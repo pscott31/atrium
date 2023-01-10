@@ -1,4 +1,5 @@
 use frontend::{GreeterClient, HelloRequest};
+use tokio;
 use tonic_web_wasm_client::Client;
 use wasm_bindgen_futures::spawn_local;
 use yew::prelude::*;
@@ -73,6 +74,11 @@ fn get_message(message: UseStateHandle<String>) {
         message.set(response.unwrap().get_ref().message.clone());
     })
 }
+
+// #[tokio::main(flavor = "current_thread")]
+// async fn main() {
+//     yew::Renderer::<App>::new().render();
+// }
 
 fn main() {
     yew::Renderer::<App>::new().render();

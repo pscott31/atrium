@@ -2,6 +2,22 @@ use crate::store::{get_users, User};
 use ybc;
 use yew::{platform::spawn_local, prelude::*};
 
+// fn dave(users: &Vec<User>) -> Html {
+//     html! {
+//         <table>{
+//         for users.iter().map(|user| {
+//           <tr>
+//             <td>{ user.name }</td>
+//             <td>{ user.contact_name }</td>
+//             <td>{ user.email }</td>
+//             <td>{ user.phone }</td>
+//           </tr>
+//         })
+//       }
+//       </table>
+//     }
+// }
+
 #[function_component(UserList)]
 pub fn user_list() -> Html {
     let users = use_state(|| Vec::<User>::new());
@@ -9,20 +25,29 @@ pub fn user_list() -> Html {
 
     html! {
       <>
-      <div>{format!("{:?}", users)}</div>
         <ybc::Table>
-            <tr>
-              <td>{"foo"}</td>
-              <td>{"bar"}</td>
-            </tr>
-            <tr>
-            <td>{"jim"}</td>
-            <td>{"bob"}</td>
-          </tr>
+        {for users.iter().map(|user| html!{
           <tr>
-          <td>{"fred"}</td>
-          <td>{"bloggs"}</td>
-        </tr>
+            <td>{ user.name.clone() }</td>
+            <td>{ user.contact_name.clone() }</td>
+            <td>{ user.email.clone() }</td>
+            <td>{ user.phone.clone() }</td>
+          </tr>
+        })}
+
+
+          //   <tr>
+          //     <td>{"foo"}</td>
+          //     <td>{"bar"}</td>
+          //   </tr>
+          //   <tr>
+          //   <td>{"jim"}</td>
+          //   <td>{"bob"}</td>
+          // </tr>
+          // <tr>
+          // <td>{"fred"}</td>
+          // <td>{"bloggs"}</td>
+        // </tr>
         </ybc::Table>
         </>
     }
