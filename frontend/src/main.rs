@@ -3,30 +3,36 @@ use tonic_web_wasm_client::Client;
 use wasm_bindgen_futures::spawn_local;
 use yew::prelude::*;
 
+use frontend::components;
 use ybc::NavbarFixed::Top;
-use ybc::TileCtx::{Ancestor, Child, Parent};
-use ybc::TileSize::Four;
-use yew::prelude::*;
+use ybc::NavbarItemTag::A;
 
 #[function_component(App)]
 fn app() -> Html {
     let message = use_state_eq(|| "waiting".to_string());
     get_message(message.clone());
-    let message2 = (*message).clone();
+    // let message2 = (*message).clone();
 
+    // let nav_items = [ybc::NavbarItem{}]
     html! {
       <>
-      <ybc::Navbar fixed={Top} /* .. your navbar content here .. *//>
-      <ybc::Container fluid=true>
-        <ybc::Tile ctx={Ancestor}>
-          <ybc::Tile ctx={Parent} vertical=true size={Four}>
-            <ybc::Tile ctx={Child} classes={classes!("box")}>
-              <p>{"Lorem ipsum dolor sit amet ..."}</p>
-            </ybc::Tile>
-            /* .. snip .. more tiles here .. */
-          </ybc::Tile>
-        </ybc::Tile>
-      </ybc::Container>
+      <ybc::Navbar fixed={Top} navstart={view_navstart()}></ybc::Navbar>
+      <ybc::Section>
+        <ybc::Container fluid=true>
+        <components::UserList/>
+          // <ybc::Tile ctx={Ancestor}>
+          //   <ybc::Tile ctx={Parent} vertical=true size={Four}>
+          //     <ybc::Tile ctx={Child} classes={classes!("box")}>
+          //       <p>{"Lorem ipsum dolor sit amet ..."}</p>
+          //     </ybc::Tile>
+          //     <ybc::Tile ctx={Child} classes={classes!("box")}>
+          //       <p>{"Lorem ipsum dolor sit amet ..."}</p>
+          //     </ybc::Tile>
+          //     /* .. snip .. more tiles here .. */
+          //   </ybc::Tile>
+          // </ybc::Tile>
+        </ybc::Container>
+      </ybc::Section>
       </>
     }
 
@@ -41,6 +47,19 @@ fn app() -> Html {
     // </section>
 
     //   }
+}
+
+fn view_navstart() -> Html {
+    html! {
+        <>
+            <ybc::NavbarItem tag={A} href="/">
+                { "Home" }
+            </ybc::NavbarItem>
+            <ybc::NavbarItem tag={A} href="https://github.com/anlumo/tttod/blob/main/README.md">
+                { "About" }
+            </ybc::NavbarItem>
+        </>
+    }
 }
 
 fn get_message(message: UseStateHandle<String>) {
