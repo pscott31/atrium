@@ -1,2 +1,2 @@
 mod user_list;
-pub use user_list::UserList;
+pub use user_list::UserPage;
