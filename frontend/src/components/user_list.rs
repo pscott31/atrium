@@ -1,21 +1,37 @@
+use crate::components::UserAdd;
 use crate::log::log;
 use crate::store::{get_users, User};
 use ybc;
 use yew::Properties;
 use yew::{platform::spawn_local, prelude::*};
-
+use yew_icons::{Icon, IconId};
 #[derive(Properties, PartialEq)]
 pub struct UserListProps {
     pub users: Vec<User>,
 }
 
+fn add_user() {
+    log!("clicky")
+}
+
+// onclick={Callback::from(|_| (add_user()))}
 #[function_component(UserList)]
-// pub fn user_list(users) -> Html {
 pub fn user_list(UserListProps { users }: &UserListProps) -> Html {
     log!("refresh_user_list");
 
+    let add_button = html! {
+    <button class="button is-link">
+      <span class="icon">
+      <Icon icon_id={IconId::FontAwesomeRegularSquarePlus}/>
+      </span>
+      <span>{"Add User"}</span>
+    </button>
+    };
+
     html! {
       <>
+        <ybc::ModalCard id="cake" title="Add User" trigger={add_button} body={html!{<UserAdd/>}}/>
+        // {add_button}
         <ybc::Table>
           <thead>
             <tr>
