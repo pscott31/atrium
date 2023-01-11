@@ -8,7 +8,7 @@ use surrealdb::Surreal;
 
 const USER: &str = "user";
 
-#[derive(Debug, Deserialize, PartialEq, Clone)]
+#[derive(Debug, Deserialize, PartialEq, Clone, Default)]
 #[allow(dead_code)]
 pub struct User {
     pub name: String,
