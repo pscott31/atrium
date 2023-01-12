@@ -660,6 +660,7 @@ dependencies = [
  "wasm-bindgen-futures",
  "ybc",
  "yew",
+ "yew_icons",
 ]
 
 [[package]]
@@ -2098,6 +2099,7 @@ checksum = "6bdef32e8150c2a081110b42772ffe7d7c9032b606bc226c8260fd97e0976601"
 [[package]]
 name = "surrealdb"
 version = "1.0.0-beta.8"
+source = "git+https://github.com/pscott31/surrealdb#cfe62d3b25d5a6bf89b35dee3f88988c4ac46a88"
 dependencies = [
  "addr",
  "argon2",
@@ -2934,6 +2936,15 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn",
+]
+
+[[package]]
+name = "yew_icons"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0601d9e0dc6fbf88663d0a92c3aaa9ad5f5f8a3bf7866f563ed232e6de5d2793"
+dependencies = [
+ "yew",
 ]
 
 [[package]]

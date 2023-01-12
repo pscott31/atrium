@@ -19,6 +19,6 @@ wasm-bindgen = "0.2.83"
 wasm-bindgen-futures = "0.4.33"
 ybc = {path="../../sw/ybc"}
 yew = { version = "0.20", features = ["csr"] }
-yew_icons = { version="0.7.0", features=["font_awesome_regular"]}
+yew_icons = { version="0.7.0", features=["font_awesome_regular", "font_awesome_solid"]}
 
  

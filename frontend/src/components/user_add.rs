@@ -1,33 +1,59 @@
+use crate::components::UserForm;
 use crate::log::log;
 use crate::store::User;
+
+use ybc;
 use yew::prelude::*;
 use yew_icons::{Icon, IconId};
 
-#[function_component(UserAdd)]
-pub fn user_add() -> Html {
-    log!("rendering  user_add");
-    let user = use_state_eq(|| User::default());
-    let user2 = user.clone();
-    let on_name_update: Callback<String> = (move |s| {
-        log!("setting user name to {s}");
-        let mut new_user = (*user).clone();
-        // new_user.name = s;
-        user.set(new_user);
-    })
-    .into();
+#[function_component(AddUserButton)]
+pub fn user_add_button() -> Html {
+    let trigger = html! {
+    <button class="button is-link">
+      <span class="icon">
+      <Icon icon_id={IconId::FontAwesomeRegularSquarePlus}/>
+      </span>
+      <span>{"Add User"}</span>
+    </button>
+    };
 
-    // let name_changed = |s| log!("update {}", s);
-    let name_input =
-        html! {<ybc::Input name={"name"} value={user2.name.clone()} update={on_name_update}/>};
     html! {
-        <>
-        <ybc::Field label="Display Name">
-          <ybc::Control classes="has-icons-left">
-            {name_input}
-            <ybc::Icon alignment={ybc::Alignment::Left} size={ybc::Size::Small}><Icon icon_id={IconId::FontAwesomeRegularUser}/></ybc::Icon>
-          </ybc::Control>
-        </ybc::Field>
-        <div>{format!("name: {}", user2.name.clone())}</div>
-        </>
+      <AddUserModal {trigger}/>
+    }
+}
+
+#[derive(Properties, PartialEq)]
+pub struct UserAddModalProps {
+    trigger: Html,
+}
+
+#[function_component(AddUserModal)]
+pub fn user_add_modal(props: &UserAddModalProps) -> Html {
+    let user = use_mut_ref(|| User::default());
+
+    let onupdate = {
+        let user = user.clone();
+        move |new_user: User| {
+            log!("updated user: {user:?}");
+            *user.borrow_mut() = new_user
+        }
+    };
+
+    let add_user = move |_| {
+        log!("saving new user: {:?}", user);
+    };
+
+    let footer = html! {
+      <>
+      <ybc::Button classes="is-success" onclick={add_user}>{"Save changes"}</ybc::Button>
+      <ybc::Button >{"Cancel"}</ybc::Button>
+      </>
+    };
+
+    let body = html! {<UserForm {onupdate}/>};
+    let trigger = props.trigger.clone();
+
+    html! {
+        <ybc::ModalCard id="cake" title="Add User"  {trigger} {body} {footer}/>
     }
 }

@@ -1,4 +1,4 @@
-use crate::components::UserAdd;
+use crate::components::AddUserButton;
 use crate::log::log;
 use crate::store::{get_users, User};
 use ybc;
@@ -14,24 +14,13 @@ fn add_user() {
     log!("clicky")
 }
 
-// onclick={Callback::from(|_| (add_user()))}
 #[function_component(UserList)]
 pub fn user_list(UserListProps { users }: &UserListProps) -> Html {
     log!("refresh_user_list");
 
-    let add_button = html! {
-    <button class="button is-link">
-      <span class="icon">
-      <Icon icon_id={IconId::FontAwesomeRegularSquarePlus}/>
-      </span>
-      <span>{"Add User"}</span>
-    </button>
-    };
-
     html! {
       <>
-        <ybc::ModalCard id="cake" title="Add User" trigger={add_button} body={html!{<UserAdd/>}}/>
-        // {add_button}
+        <AddUserButton/>
         <ybc::Table>
           <thead>
             <tr>
