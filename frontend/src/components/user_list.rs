@@ -4,14 +4,10 @@ use crate::store::{get_users, User};
 use ybc;
 use yew::Properties;
 use yew::{platform::spawn_local, prelude::*};
-use yew_icons::{Icon, IconId};
+
 #[derive(Properties, PartialEq)]
 pub struct UserListProps {
     pub users: Vec<User>,
-}
-
-fn add_user() {
-    log!("clicky")
 }
 
 #[function_component(UserList)]
@@ -46,6 +42,8 @@ pub fn user_list(UserListProps { users }: &UserListProps) -> Html {
 }
 
 fn fetch_users(users: UseStateHandle<Vec<User>>) {
+    // use crate::components::DbConnection;
+    // let db = use_context::<DbConnection>();
     spawn_local(async move {
         let users_vec = get_users().await.expect("failed to get users");
         users.set(users_vec);

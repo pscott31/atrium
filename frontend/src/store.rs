@@ -19,6 +19,20 @@ pub struct User {
 
 static DB: Surreal<Client> = Surreal::init();
 
+pub async fn connect(db: Surreal<Client>) -> surrealdb::Result<()> {
+    log!("connecting properly");
+    let arse = Surreal::new::<Ws>("localhost:8000").await?;
+    let bandit = Surreal<Ws>::init();
+    //db.connect::<Ws>("localhost:8000").await?;
+
+    db.signin(Root {
+        username: "root",
+        password: "root",
+    })
+    .await?;
+    Ok(())
+}
+
 pub async fn get_users() -> surrealdb::Result<Vec<User>> {
     log!("connecting");
     DB.connect::<Ws>("localhost:8000").await?;
@@ -44,3 +58,5 @@ pub async fn get_users() -> surrealdb::Result<Vec<User>> {
 
     Ok(accounts)
 }
+
+pub async fn add_user() {}

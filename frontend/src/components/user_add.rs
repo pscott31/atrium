@@ -31,7 +31,7 @@ pub struct UserAddModalProps {
 pub fn user_add_modal(props: &UserAddModalProps) -> Html {
     let user = use_mut_ref(|| User::default());
 
-    let onupdate = {
+    let on_update = {
         let user = user.clone();
         move |new_user: User| {
             log!("updated user: {user:?}");
@@ -50,7 +50,7 @@ pub fn user_add_modal(props: &UserAddModalProps) -> Html {
       </>
     };
 
-    let body = html! {<UserForm {onupdate}/>};
+    let body = html! {<UserForm {on_update}/>};
     let trigger = props.trigger.clone();
 
     html! {

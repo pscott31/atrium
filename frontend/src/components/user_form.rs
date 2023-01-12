@@ -1,7 +1,7 @@
 use crate::components::input_field;
 use crate::store::User;
 use yew::prelude::*;
-use yew_icons::{Icon, IconId};
+use yew_icons::IconId;
 
 pub enum Msg {
     NameChanged(String),
@@ -12,7 +12,7 @@ pub enum Msg {
 
 #[derive(Properties, PartialEq)]
 pub struct UserFormProps {
-    pub onupdate: Callback<User>,
+    pub on_update: Callback<User>,
 }
 
 pub struct UserForm {
@@ -36,7 +36,7 @@ impl Component for UserForm {
             Msg::EmailChanged(s) => self.user.email = s,
             Msg::PhoneChanged(s) => self.user.phone = s,
         }
-        ctx.props().onupdate.emit(self.user.clone());
+        ctx.props().on_update.emit(self.user.clone());
         true
     }
 
