@@ -1,9 +1,10 @@
 use crate::log::log;
+use once_cell::sync::OnceCell;
 use serde::Deserialize;
+use std;
 use surrealdb::engine::remote::ws::{Client, Ws};
 use surrealdb::opt::auth::Root;
 use surrealdb::Surreal;
-
 ////////// END LOGGING
 
 const USER: &str = "user";
@@ -17,12 +18,16 @@ pub struct User {
     pub phone: String,
 }
 
-static DB: Surreal<Client> = Surreal::init();
+// static DB: Surreal<Client> = Surreal::init();
+//static Potato: std::cell::RefCell<Surreal<Client>> = Surreal::init();
+// static Potato: std::cell::RefCell<String>; // = std:cell::RefCell::new("foo".into());
 
-pub async fn connect(db: Surreal<Client>) -> surrealdb::Result<()> {
+pub static DB: OnceCell<Surreal<Client>> = OnceCell::new();
+
+pub async fn connect() -> surrealdb::Result<()> {
     log!("connecting properly");
-    let arse = Surreal::new::<Ws>("localhost:8000").await?;
-    let bandit = Surreal<Ws>::init();
+    let db = Surreal::new::<Ws>("localhost:8000").await?;
+    // let bandit = Surreal<Ws>::init();
     //db.connect::<Ws>("localhost:8000").await?;
 
     db.signin(Root {
@@ -30,22 +35,28 @@ pub async fn connect(db: Surreal<Client>) -> surrealdb::Result<()> {
         password: "root",
     })
     .await?;
+
+    // TODO - remove panic?
+    DB.set(db).expect("database already connected");
+    // std::mem::swap(&mut db, &mut DB);
     Ok(())
 }
 
 pub async fn get_users() -> surrealdb::Result<Vec<User>> {
     log!("connecting");
-    DB.connect::<Ws>("localhost:8000").await?;
+    // TODO: Don't panic
+    let db = DB.get().expect("db not connected");
+    db.connect::<Ws>("localhost:8000").await?;
 
-    DB.signin(Root {
+    db.signin(Root {
         username: "root",
         password: "root",
     })
     .await?;
 
-    DB.use_ns("atrium").use_db("atrium").await?;
+    db.use_ns("atrium").use_db("atrium").await?;
 
-    let mut accounts: Vec<User> = DB.select(USER).await?;
+    let mut accounts: Vec<User> = db.select(USER).await?;
 
     let u3 = User {
         name: "xxx".into(),

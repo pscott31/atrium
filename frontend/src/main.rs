@@ -1,5 +1,6 @@
 use std::cell::RefCell;
 use std::rc::Rc;
+use wasm_bindgen_futures::spawn_local;
 use yew::prelude::*;
 
 use frontend::components;
@@ -13,6 +14,7 @@ use ybc::NavbarItemTag::A;
 // type Badger = Rc<DbConnection>;
 // type Badger = Rc<RefCell<DbConnection>>;
 use yew::functional::{use_mut_ref, use_state};
+use yew::platform::pinned::oneshot;
 
 #[function_component(App)]
 fn app() -> Html {
@@ -22,9 +24,18 @@ fn app() -> Html {
 
     // let db_connection = use_mut_ref(|| components::DbConnection::new());
 
-    let (my_store, dispatch) = use_store::<MyStore>();
-    let foo = my_store.conn.clone();
-    store::connect(foo);
+    // let (my_store, dispatch) = use_store::<MyStore>();
+    // let foo = my_store.conn.clone();
+
+    let (tx, rx) = oneshot::channel::<()>();
+    spawn_local(async {
+        // todo remove unwrap
+        store::connect().await.unwrap();
+        wasm_log("connected in main");
+        tx.send(()).unwrap();
+    });
+    rx.into();
+    store::DB.wait();
 
     html! {
       <>

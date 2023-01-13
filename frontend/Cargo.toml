@@ -12,6 +12,7 @@ name = "wasm"
 path = "src/main.rs"
 
 [dependencies]
+once_cell = "1.17.0"
 serde = "1.0.152"
 surrealdb = {git="https://github.com/pscott31/surrealdb", default-features = false, features=["http", "protocol-http", "protocol-ws", "kv-mem"]} # path="../../sw/surrealdb/lib"
 tokio = { version = "1.22.0", default-features = false, features = ["rt", "macros"] }
