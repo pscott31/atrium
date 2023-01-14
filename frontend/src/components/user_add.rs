@@ -1,9 +1,11 @@
 use crate::components::UserForm;
 use crate::log::log;
+use crate::store;
 use crate::store::User;
 
 use ybc;
 use yew::prelude::*;
+use yew_hooks::use_async;
 use yew_icons::{Icon, IconId};
 
 #[function_component(AddUserButton)]
@@ -39,15 +41,13 @@ pub fn user_add_modal(props: &UserAddModalProps) -> Html {
         }
     };
 
-    let add_user = move |_| {
-        log!("saving new user: {:?}", user);
-    };
+    let add_user = use_async(async move { store::add_user(&user.borrow()).await });
+    let close_ctx = use_context::<ybc::ModalCloserContext>().expect("no close ctx found");
 
-    let footer = html! {
-      <>
-      <ybc::Button classes="is-success" onclick={add_user}>{"Save changes"}</ybc::Button>
-      <ybc::Button >{"Cancel"}</ybc::Button>
-      </>
+    let footer = html! {<>
+        <ybc::Button classes="is-success" onclick={move|_| add_user.run()}>{"Save changes"}</ybc::Button>
+        <ybc::Button >{"Cancel"}</ybc::Button>
+        </>
     };
 
     let body = html! {<UserForm {on_update}/>};
