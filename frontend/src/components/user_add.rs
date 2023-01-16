@@ -42,7 +42,7 @@ pub fn user_add_modal(props: &UserAddModalProps) -> Html {
     };
 
     let add_user = use_async(async move { store::add_user(&user.borrow()).await });
-    let close_ctx = use_context::<ybc::ModalCloserContext>().expect("no close ctx found");
+    // let close_ctx = use_context::<ybc::ModalCloserContext>().expect("no close ctx found");
 
     let footer = html! {<>
         <ybc::Button classes="is-success" onclick={move|_| add_user.run()}>{"Save changes"}</ybc::Button>
