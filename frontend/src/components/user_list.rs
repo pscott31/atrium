@@ -12,8 +12,6 @@ pub struct UserListProps {
 
 #[function_component(UserList)]
 pub fn user_list(UserListProps { users }: &UserListProps) -> Html {
-    log!("refresh_user_list");
-
     html! {
       <>
         <AddUserButton/>
@@ -52,7 +50,7 @@ fn fetch_users(users: UseStateHandle<Vec<User>>) {
 
 #[function_component(UserPage)]
 pub fn user_page() -> Html {
-    log!("render user page");
+    // log!("render user page");
     let users = use_state_eq(|| Vec::<User>::new());
     fetch_users(users.clone());
 

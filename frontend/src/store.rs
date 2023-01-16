@@ -25,7 +25,6 @@ pub struct User {
 pub static DB: OnceCell<Surreal<Client>> = OnceCell::new();
 
 pub async fn connect() -> surrealdb::Result<()> {
-    log!("connecting properly");
     let db = Surreal::new::<Ws>("localhost:8000").await?;
     db.signin(Root {
         username: "root",
@@ -55,7 +54,6 @@ pub async fn get_users() -> surrealdb::Result<Vec<User>> {
     accounts.push(u3);
     println!("{accounts:?}");
 
-    log!("got users!");
     Ok(accounts)
 }
 
@@ -71,7 +69,7 @@ pub async fn add_user(user: &User) -> Result<(), String> {
         }
         Err(err) => {
             log!("OH NO: {err:?}");
-            Err("fucksticks".into())
+            Err("fucksticks".into()) //todo bettor error!
         }
     }
 }

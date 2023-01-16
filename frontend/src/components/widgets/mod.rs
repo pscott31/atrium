@@ -1,2 +1,2 @@
 mod modal;
-use modal::*;
+pub use modal::*;
