@@ -1,4 +1,6 @@
 use crate::components::UserForm;
+use crate::enclose::enclose;
+use crate::state::GlobalState;
 use crate::store;
 use crate::store::User;
 
@@ -6,6 +8,7 @@ use ybc;
 use yew::prelude::*;
 use yew_hooks::use_async;
 use yew_icons::{Icon, IconId};
+use yewdux::prelude::*;
 
 #[function_component(AddUserButton)]
 pub fn user_add_button() -> Html {
@@ -36,19 +39,18 @@ pub struct UserAddModalProps {
 #[function_component(AddUserModal)]
 pub fn user_add_modal(props: &UserAddModalProps) -> Html {
     let user = use_mut_ref(|| User::default());
+
     let adder = {
         let user = user.clone();
-        use_async(async move { store::add_user(&user.borrow()).await })
-    };
-    let on_update = {
-        let user = user.clone();
-        move |new_user: User| *user.borrow_mut() = new_user
+        use_async(async move {
+            store::add_user(&user.borrow())
+                .await
+                .map(|u| Dispatch::<GlobalState>::new().reduce_mut(|s| s.users.push(u)))
+        })
     };
 
-    let on_save_clicked = {
-        let adder = adder.clone();
-        move |_| adder.run()
-    };
+    let on_update = enclose! {(user) move |new_user: User| *user.borrow_mut() = new_user};
+    let on_save_clicked = enclose! { (adder) move |_| adder.run() };
 
     let vc = props.visible_changed.clone();
     let footer = html! {<>

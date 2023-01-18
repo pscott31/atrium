@@ -1,6 +1,6 @@
 use yew::prelude::*;
 
-use crate::log::log;
+// use crate::log::log;
 
 #[derive(Properties, PartialEq)]
 pub struct ModalProps {

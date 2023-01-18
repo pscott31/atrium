@@ -3,5 +3,5 @@ use yewdux::prelude::*;
 
 #[derive(Debug, Default, Clone, PartialEq, Eq, Store)]
 pub struct GlobalState {
-    users: Vec<User>,
+    pub users: Vec<User>,
 }

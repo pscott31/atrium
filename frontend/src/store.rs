@@ -57,7 +57,7 @@ pub async fn get_users() -> surrealdb::Result<Vec<User>> {
     Ok(accounts)
 }
 
-pub async fn add_user(user: &User) -> Result<(), String> {
+pub async fn add_user(user: &User) -> Result<User, String> {
     log!("adding user {user:?}");
     let db = DB.get().expect("db not connected");
     let res: Result<User, _> = db.create(USER).content(user).await;
@@ -65,7 +65,7 @@ pub async fn add_user(user: &User) -> Result<(), String> {
     match res {
         Ok(stuff @ User { .. }) => {
             log!("OK: {stuff:?}");
-            Ok(())
+            Ok(stuff)
         }
         Err(err) => {
             log!("OH NO: {err:?}");
