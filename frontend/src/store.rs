@@ -1,10 +1,10 @@
 use crate::log::log;
+use anyhow::Result;
 use once_cell::sync::OnceCell;
 use serde::{Deserialize, Serialize};
 use surrealdb::engine::remote::ws::{Client, Ws};
 use surrealdb::opt::auth::Root;
 use surrealdb::Surreal;
-
 const USER: &str = "user";
 
 #[derive(Debug, Serialize, Deserialize, PartialEq, Clone, Default)]
@@ -24,7 +24,7 @@ pub struct User {
 
 pub static DB: OnceCell<Surreal<Client>> = OnceCell::new();
 
-pub async fn connect() -> surrealdb::Result<()> {
+pub async fn connect() -> Result<()> {
     let db = Surreal::new::<Ws>("localhost:8000").await?;
     db.signin(Root {
         username: "root",

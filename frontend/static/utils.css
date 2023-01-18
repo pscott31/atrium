@@ -1,0 +1,9 @@
+.center-screen {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    min-height: 100vh;
+    /* Equal to the padding on the top level <html> element */
+    margin-top: -3.25rem;
+}

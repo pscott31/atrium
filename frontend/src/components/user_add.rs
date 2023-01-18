@@ -58,7 +58,7 @@ pub fn user_add_modal(props: &UserAddModalProps) -> Html {
         </>
     };
 
-    let badger = {
+    let on_modal_closed = {
         let vc = props.visible_changed.clone();
         move |_| vc.emit(false)
     };
@@ -87,6 +87,6 @@ pub fn user_add_modal(props: &UserAddModalProps) -> Html {
     };
 
     html! {
-        <crate::components::widgets::Modal title="Add User" {body} {footer} is_active={props.is_visible} on_close={badger}/>
+        <crate::components::widgets::Modal title="Add User" {body} {footer} is_active={props.is_visible} on_close={on_modal_closed}/>
     }
 }
