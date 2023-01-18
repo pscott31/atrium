@@ -7,7 +7,7 @@ use surrealdb::opt::auth::Root;
 use surrealdb::Surreal;
 const USER: &str = "user";
 
-#[derive(Debug, Serialize, Deserialize, PartialEq, Clone, Default)]
+#[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Clone, Default)]
 #[allow(dead_code)]
 pub struct User {
     #[serde(skip_serializing)]

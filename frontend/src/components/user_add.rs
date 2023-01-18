@@ -1,5 +1,4 @@
 use crate::components::UserForm;
-use crate::log::log;
 use crate::store;
 use crate::store::User;
 

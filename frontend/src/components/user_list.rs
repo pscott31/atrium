@@ -1,5 +1,4 @@
 use crate::components::AddUserButton;
-use crate::log::log;
 use crate::store::{get_users, User};
 use ybc;
 use yew::Properties;

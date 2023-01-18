@@ -6,7 +6,6 @@ mod user_list;
 mod widgets;
 
 pub use app::*;
-pub use input_field::input_field;
 pub use input_field::*;
 pub use user_add::*;
 pub use user_form::*;
