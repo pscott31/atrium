@@ -1,12 +1,9 @@
+use crate::components::widgets::Modal;
 use crate::components::UserForm;
-use crate::enclose::enclose;
 use crate::state::GlobalState;
 use crate::store;
 use crate::store::User;
-
-use ybc;
 use yew::prelude::*;
-use yew_hooks::use_async;
 use yew_icons::{Icon, IconId};
 use yewdux::prelude::*;
 
@@ -25,69 +22,90 @@ pub fn user_add_button() -> Html {
       </span>
       <span>{"Add User"}</span>
     </button>
-    <AddUserModal is_visible={*modal_visible} visible_changed={move |v| modal_visible.set(v)}/>
+    if *modal_visible {
+        <AddUserModal on_close={move |_| modal_visible.set(false)}/>
+    }
     </>
     }
 }
 
 #[derive(Properties, PartialEq)]
-pub struct UserAddModalProps {
-    is_visible: bool,
-    visible_changed: Callback<bool>,
+pub struct AddUserModalProps {
+    on_close: Callback<()>,
 }
 
-#[function_component(AddUserModal)]
-pub fn user_add_modal(props: &UserAddModalProps) -> Html {
-    let user = use_mut_ref(|| User::default());
+pub struct AddUserModal {
+    user: User,
+    error: Option<String>,
+}
 
-    let adder = {
-        let user = user.clone();
-        use_async(async move {
-            store::add_user(&user.borrow())
-                .await
-                .map(|u| Dispatch::<GlobalState>::new().reduce_mut(|s| s.users.push(u)))
-        })
-    };
+pub enum Msg {
+    CloseRequest,
+    Updated(User),
+    SaveRequest,
+    Saved(User),
+    SaveError(String),
+}
 
-    let on_update = enclose! {(user) move |new_user: User| *user.borrow_mut() = new_user};
-    let on_save_clicked = enclose! { (adder) move |_| adder.run() };
+impl Component for AddUserModal {
+    type Message = Msg;
+    type Properties = AddUserModalProps;
 
-    let vc = props.visible_changed.clone();
-    let footer = html! {<>
-        <ybc::Button classes="is-success" onclick={on_save_clicked}>{"Save changes"}</ybc::Button>
-        <ybc::Button onclick={move |_|vc.emit(false)}>{"Cancel"}</ybc::Button>
-        </>
-    };
-
-    let on_modal_closed = {
-        let vc = props.visible_changed.clone();
-        move |_| vc.emit(false)
-    };
-
-    // If success from user adder, we can close ourselves
-    if let Some(_) = adder.data {
-        if props.is_visible {
-            props.visible_changed.emit(false)
+    fn create(_ctx: &Context<Self>) -> Self {
+        AddUserModal {
+            user: User::default(),
+            error: None,
         }
     }
 
-    // If there was an error, report it and stay open
-    let error_box = html! {
-        if let Some(error_msg) = &adder.error {
-        <div class="notification is-danger">
-        {format!("Error adding user: {}", error_msg)}
-        </div>
+    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
+        match msg {
+            Msg::CloseRequest => {
+                ctx.props().on_close.emit(());
+                false
+            }
+            Msg::SaveRequest => {
+                let link = ctx.link().clone();
+                let user = self.user.clone();
+                link.send_future(async move {
+                    match store::add_user(&user).await {
+                        Ok(_) => Msg::Saved(user),
+                        Err(err) => Msg::SaveError(format!("{err}")),
+                    }
+                });
+                false
+            }
+            Msg::Saved(user) => {
+                Dispatch::<GlobalState>::new().reduce_mut(|s| s.users.push(user));
+                ctx.link().send_message(Msg::CloseRequest);
+                false
+            }
+            Msg::SaveError(err) => {
+                self.error = Some(err);
+                true
+            }
+            Msg::Updated(u) => {
+                self.user = u;
+                false
+            }
         }
-    };
+    }
 
-    let body = html! {
-    <>
-        {error_box}
-        <UserForm {on_update}/>
-    </>
-    };
+    fn view(&self, ctx: &Context<Self>) -> Html {
+        let l = ctx.link();
+        let footer = html! {<>
+            <button class="button is-success" onclick={l.callback(|_| Msg::SaveRequest)}>{"Save changes"}</button>
+            <button class="button" onclick={l.callback(|_| Msg::CloseRequest)}>{"Cancel"}</button>
+            </>
+        };
 
-    html! {
-        <crate::components::widgets::Modal title="Add User" {body} {footer} is_active={props.is_visible} on_close={on_modal_closed}/>
+        html! {
+            <Modal title="Add User" {footer} on_close={l.callback(|_| Msg::CloseRequest)}>
+                if let Some(err) = &self.error {
+                    <div class="notification is-danger">{format!("Error adding user: {err}")}</div>
+                }
+                <UserForm on_update={l.callback(|u| Msg::Updated(u))} />
+            </Modal>
+        }
     }
 }

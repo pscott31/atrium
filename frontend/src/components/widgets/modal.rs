@@ -4,17 +4,16 @@ use yew::prelude::*;
 
 #[derive(Properties, PartialEq)]
 pub struct ModalProps {
-    pub is_active: bool,
     pub on_close: Callback<()>,
     pub title: String,
     pub footer: Html,
-    pub body: Html,
+    pub children: Children,
 }
 
 #[function_component(Modal)]
 pub fn modal(props: &ModalProps) -> Html {
     let on_close = props.on_close.clone();
-    let classes = classes!("modal", props.is_active.then(|| "is-active"));
+    let classes = classes!("modal", "is-active");
     let close_clicked = move |_| on_close.emit(());
 
     html! {
@@ -26,7 +25,7 @@ pub fn modal(props: &ModalProps) -> Html {
                 <button class="delete" aria-label="close" onclick={close_clicked.clone()}></button>
             </header>
             <section class="modal-card-body">
-                {props.body.clone()}
+                {props.children.clone()}
             </section>
             <footer class="modal-card-foot">
                 {props.footer.clone()}

@@ -18,10 +18,6 @@ pub struct User {
     pub phone: String,
 }
 
-// static DB: Surreal<Client> = Surreal::init();
-//static Potato: std::cell::RefCell<Surreal<Client>> = Surreal::init();
-// static Potato: std::cell::RefCell<String>; // = std:cell::RefCell::new("foo".into());
-
 pub static DB: OnceCell<Surreal<Client>> = OnceCell::new();
 
 pub async fn connect() -> Result<()> {
