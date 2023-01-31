@@ -1,4 +1,4 @@
-use yew::{html::Buildable, prelude::*};
+use yew::prelude::*;
 use yew_icons::{Icon, IconId};
 
 #[derive(Properties, PartialEq)]

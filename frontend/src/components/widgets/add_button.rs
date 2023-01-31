@@ -1,19 +1,27 @@
 use yew::{html::Buildable, prelude::*};
 use yew_icons::{Icon, IconId};
 
-#[derive(Properties, PartialEq)]
-pub struct AddButtonProps {
-    title: String,
-}
+// #[derive(Properties, PartialEq)]
+// pub struct AddButtonProps {
+//     title: String,
+// }
 
-pub struct MyToken {}
+// #[derive(Properties, PartialEq)]
+// pub struct MyProps {
+//     proppy: String,
+// }
 
-pub trait Closeable {}
+// pub trait Closeable {}
 #[function_component(AddButton)]
-pub fn add_button<T>() -> Html
+pub fn add_button<T, P, B, TOKEN, How>() -> Html
 where
-    T: Component,
-    // T::Properties: Properties, //<Properties: Closable>, // <<T as Component>::Properties as Properties>::on_close: Callback<()>,
+    // T: Component,
+    T: Component<Properties = P>,
+    P: Properties<Builder = B>,
+    B: Buildable<TOKEN, Output = P>,
+    B::WrappedToken: yew::html::HasAllProps<P, How>,
+    // t::Properties = MyProps>,
+    // TP: Properties, // TP: Properties, // T::Properties: Properties, //<Properties: Closable>, // <<T as Component>::Properties as Properties>::on_close: Callback<()>,
     // <T::Properties as Properties>::Builder: Buildable<MyToken>,
 {
     let modal_visible = use_state(|| false);
@@ -31,7 +39,7 @@ where
     </button>
     if *modal_visible {
         // <T on_close={move |_| modal_visible.set(false)}/>
-        <T />
+        <T foo="bar"/>
     }
     </>
     }
