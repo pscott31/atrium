@@ -5,6 +5,8 @@ use yew::prelude::*;
 #[derive(Properties, PartialEq)]
 pub struct ModalProps {
     pub on_close: Callback<()>,
+    #[prop_or_default]
+    pub visible: bool,
     pub title: String,
     pub footer: Html,
     pub children: Children,
@@ -17,6 +19,7 @@ pub fn modal(props: &ModalProps) -> Html {
     let close_clicked = move |_| on_close.emit(());
 
     html! {
+        if props.visible {
         <div class={classes}>
         <div class="modal-background" onclick={close_clicked.clone()}></div>
         <div class="modal-card">
@@ -32,5 +35,7 @@ pub fn modal(props: &ModalProps) -> Html {
             </footer>
         </div>
         <button class="modal-close is-large" aria-label="close" onclick={close_clicked.clone()}></button>
-    </div>}
+        </div>
+        }
+    }
 }
