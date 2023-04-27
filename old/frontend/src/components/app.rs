@@ -52,7 +52,7 @@ fn main_stuff() -> Html {
         <ybc::Navbar fixed={Top} navstart={navbar_items()}></ybc::Navbar>
         <ybc::Section>
           <ybc::Container fluid=true>
-            <components::BookingList/>
+            <components::BookingsPage/>
           </ybc::Container>
         </ybc::Section>
 

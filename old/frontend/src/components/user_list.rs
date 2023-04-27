@@ -1,4 +1,4 @@
-use crate::components::AddUserButton;
+use crate::components::widgets::{AddButton, AddModal};
 use crate::state::GlobalState;
 use crate::store::{get_users, User};
 use ybc;
@@ -14,9 +14,14 @@ pub struct UserListProps {
 
 #[function_component(UserList)]
 pub fn user_list(UserListProps { users }: &UserListProps) -> Html {
+    let add_modal_visible = use_state(|| false);
+    //TODO
+    let dave = add_modal_visible.clone();
+    let frank = add_modal_visible.clone();
     html! {
       <>
-        <AddUserButton/>
+        <AddButton title={"Add User"} onclick={move |_| add_modal_visible.set(true)}/>
+        <AddModal<User> visible={*dave} on_close={move |()| frank.set(false)}/>
         <ybc::Table>
           <thead>
             <tr>

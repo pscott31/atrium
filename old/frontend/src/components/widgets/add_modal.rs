@@ -1,59 +1,38 @@
 use crate::components::widgets::Modal;
 use crate::components::UserForm;
-use crate::state::GlobalState;
+// use crate::state::GlobalState;
 use crate::store;
 use crate::store::User;
 use yew::prelude::*;
-use yew_icons::{Icon, IconId};
-use yewdux::prelude::*;
-
-#[function_component(AddUserButton)]
-pub fn user_add_button() -> Html {
-    let modal_visible = use_state(|| false);
-    let onclick = {
-        let modal_visible = modal_visible.clone();
-        move |_| modal_visible.set(true)
-    };
-
-    html! {<>
-    <button class="button is-link" {onclick}>
-      <span class="icon">
-      <Icon icon_id={IconId::FontAwesomeRegularSquarePlus}/>
-      </span>
-      <span>{"Add User"}</span>
-    </button>
-    if *modal_visible {
-        <AddUserModal on_close={move |_| modal_visible.set(false)}/>
-    }
-    </>
-    }
-}
+// use yewdux::prelude::*;
 
 #[derive(Properties, PartialEq)]
 pub struct AddUserModalProps {
-    on_close: Callback<()>,
+    pub on_close: Callback<()>,
+    #[prop_or_default]
+    pub visible: bool,
 }
 
-pub struct AddUserModal {
-    user: User,
+pub struct AddModal<T> {
+    thing: T,
     error: Option<String>,
 }
 
-pub enum Msg {
+pub enum Msg<T> {
     CloseRequest,
-    Updated(User),
+    Updated(T),
     SaveRequest,
-    Saved(User),
+    Saved(T),
     SaveError(String),
 }
 
-impl Component for AddUserModal {
-    type Message = Msg;
+impl<T: Default + Clone + store::Addable + HasForm + 'static> Component for AddModal<T> {
+    type Message = Msg<T>;
     type Properties = AddUserModalProps;
 
     fn create(_ctx: &Context<Self>) -> Self {
-        AddUserModal {
-            user: User::default(),
+        AddModal {
+            thing: T::default(),
             error: None,
         }
     }
@@ -66,9 +45,9 @@ impl Component for AddUserModal {
             }
             Msg::SaveRequest => {
                 let link = ctx.link().clone();
-                let user = self.user.clone();
+                let user = self.thing.clone();
                 link.send_future(async move {
-                    match store::add_user(&user).await {
+                    match user.add().await {
                         Ok(_) => Msg::Saved(user),
                         Err(err) => Msg::SaveError(format!("{err}")),
                     }
@@ -76,7 +55,8 @@ impl Component for AddUserModal {
                 false
             }
             Msg::Saved(user) => {
-                Dispatch::<GlobalState>::new().reduce_mut(|s| s.users.push(user));
+                // TODO
+                // Dispatch::<GlobalState>::new().reduce_mut(|s| s.users.push(user));
                 ctx.link().send_message(Msg::CloseRequest);
                 false
             }
@@ -85,7 +65,7 @@ impl Component for AddUserModal {
                 true
             }
             Msg::Updated(u) => {
-                self.user = u;
+                self.thing = u;
                 false
             }
         }
@@ -100,12 +80,32 @@ impl Component for AddUserModal {
         };
 
         html! {
-            <Modal title="Add User" {footer} on_close={l.callback(|_| Msg::CloseRequest)}>
+            <Modal title="Add User" {footer} visible={ctx.props().visible} on_close={l.callback(|_| Msg::CloseRequest)}>
                 if let Some(err) = &self.error {
                     <div class="notification is-danger">{format!("Error adding user: {err}")}</div>
                 }
-                <UserForm on_update={l.callback(|u| Msg::Updated(u))} />
+                {
+                    T::form(ctx)
+                }
+
             </Modal>
+        }
+    }
+}
+
+pub trait HasForm: Sized {
+    fn form<C>(ctx: &Context<C>) -> Html
+    where
+        C: Component<Message = Msg<Self>>;
+}
+
+impl HasForm for User {
+    fn form<C>(ctx: &Context<C>) -> Html
+    where
+        C: Component<Message = Msg<User>>,
+    {
+        html! {
+            <UserForm on_update={ctx.link().callback(|u| Msg::Updated(u))} />
         }
     }
 }
