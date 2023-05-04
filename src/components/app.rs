@@ -8,7 +8,7 @@ use super::{UserPage, UserPageProps, Navbar, NavbarProps};
 enum ConnectionState {
     Ok,
     Pending,
-    Failed(store::StoreError),
+    Failed(store::Error),
 }
 
 impl core::fmt::Display for ConnectionState {

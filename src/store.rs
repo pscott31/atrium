@@ -1,35 +1,61 @@
 use std::time::{self, SystemTime};
 
 use crate::log::log;
+// use anyhow::Ok;
 use async_trait::async_trait;
 use once_cell::sync::OnceCell;
 use serde::{Deserialize, Serialize};
 use surrealdb::engine::remote::http::{Client, Http};
 use surrealdb::opt::auth::Root;
-use surrealdb::sql::{thing, Thing};
+use surrealdb::sql::Thing;
 use surrealdb::Surreal;
 
 const USER: &str = "user";
 const BOOKING: &str = "booking";
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
-pub enum StoreError {
+pub enum Error {
     ConnectionError(String),
     SigninError(String),
     NsError(String),
+    UpdateFailed(String),
+    InsertFailed(String),
+    SelectFailed(String),
 }
 
-impl core::fmt::Display for StoreError {
+impl core::fmt::Display for Error {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         match self {
-            StoreError::ConnectionError(reason) => write!(f, "db connect failed: {}", reason),
-            StoreError::SigninError(reason) => write!(f, "db signin failed: {}", reason),
-            StoreError::NsError(reason) => write!(f, "db use namespace failed: {}", reason),
+            Error::ConnectionError(reason) => write!(f, "db connect failed: {}", reason),
+            Error::SigninError(reason) => write!(f, "db signin failed: {}", reason),
+            Error::NsError(reason) => write!(f, "db use namespace failed: {}", reason),
+            Error::UpdateFailed(reason) => write!(f, "update failed: {}", reason),
+            Error::InsertFailed(reason) => write!(f, "insert failed: {}", reason),
+            Error::SelectFailed(reason) => write!(f, "insert failed: {}", reason),
         }
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Clone)]
+#[async_trait]
+pub trait Addable: Sized {
+    async fn add(&self) -> Result<Self, Error>;
+}
+
+#[async_trait]
+pub trait Updatable: Sized {
+    async fn update(&self) -> Result<(), Error>;
+}
+
+pub static DB: OnceCell<Surreal<Client>> = OnceCell::new();
+
+pub fn get_db() -> Result<&'static Surreal<Client>, Error> {
+    let db = DB
+        .get()
+        .ok_or_else(|| Error::ConnectionError("db not connected".into()))?;
+    Ok(db)
+}
+
+#[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Clone, Default)]
 #[allow(dead_code)]
 pub struct User {
     pub id: Option<Thing>,
@@ -39,75 +65,45 @@ pub struct User {
     pub phone: String,
 }
 
-pub async fn make_dummy_data() -> anyhow::Result<()> {
-    let fred = User {
-        id: Some(thing("user:fred123").unwrap()),
-        contact_name: "fredrick".to_string(),
-        name: "fred".to_string(),
-        email: "fred@bloggs.com".to_string(),
-        phone: "1234".to_string(),
-    };
-
-    let db = DB.get().expect("db not connected");
-    log!("creating");
-    let u: User = db.create(USER).content(fred).await?;
-    log!("{:?}", u);
-    Ok(())
-}
-
-pub static DB: OnceCell<Surreal<Client>> = OnceCell::new();
-
-pub async fn connect() -> Result<(), StoreError> {
+pub async fn connect() -> Result<(), Error> {
     log!("connecting..");
     let db = Surreal::new::<Http>("localhost:8000")
         .await
-        .map_err(|e| StoreError::ConnectionError(e.to_string()))?;
+        .map_err(|e| Error::ConnectionError(e.to_string()))?;
 
     db.signin(Root {
         username: "root",
         password: "root",
     })
     .await
-    .map_err(|e| StoreError::SigninError(e.to_string()))?;
+    .map_err(|e| Error::SigninError(e.to_string()))?;
 
     db.use_ns("atrium")
         .use_db("atrium")
         .await
-        .map_err(|e| StoreError::NsError(e.to_string()))?;
+        .map_err(|e| Error::NsError(e.to_string()))?;
     DB.set(db).expect("database already connected");
 
     // make_dummy_data().await.unwrap();
     Ok(())
 }
 
-pub async fn get_users() -> surrealdb::Result<Vec<User>> {
-    log!("get_users()");
-    let db = DB.get().expect("db not connected");
-    let accounts: Vec<User> = db.select(USER).await?;
-    Ok(accounts)
-}
-
-#[async_trait]
-pub trait Addable: Sized {
-    async fn add(&self) -> Result<Self, String>;
+pub async fn get_users() -> Result<Vec<User>, Error> {
+    let db = get_db()?;
+    db.select(USER)
+        .await
+        .map_err(|e| Error::SelectFailed(e.to_string()))
 }
 
 #[async_trait]
 impl Addable for User {
-    async fn add(&self) -> Result<User, String> {
-        log!("adding user {self:?}");
-        let db = DB.get().expect("db not connected");
+    async fn add(&self) -> Result<User, Error> {
+        let db = get_db()?;
         let res: Result<Self, _> = db.create(USER).content(self).await;
 
         match res {
-            Ok(stuff @ User { .. }) => {
-                log!("OK: {stuff:?}");
-                Ok(stuff)
-            }
-            Err(err) => {
-                log!("OH NO: {err:?}");
-                Err("fucksticks".into()) //todo bettor error!
-            }
+            Ok(u) => Ok(u),
+            Err(err) => Err(Error::UpdateFailed(err.to_string())),
         }
     }
 }
@@ -133,11 +129,12 @@ impl Default for Booking {
     }
 }
 
-pub async fn get_bookings() -> surrealdb::Result<Vec<Booking>> {
-    log!("get_users()");
-    let db = DB.get().expect("db not connected");
-
-    let mut bookings: Vec<Booking> = db.select(BOOKING).await?;
+pub async fn get_bookings() -> Result<Vec<Booking>, Error> {
+    let db = get_db()?;
+    let mut bookings: Vec<Booking> = db
+        .select(BOOKING)
+        .await
+        .map_err(|e| Error::SelectFailed(e.to_string()))?;
 
     let u3 = Booking {
         id: None,
@@ -153,20 +150,33 @@ pub async fn get_bookings() -> surrealdb::Result<Vec<Booking>> {
 
 #[async_trait]
 impl Addable for Booking {
-    async fn add(&self) -> Result<Booking, String> {
+    async fn add(&self) -> Result<Booking, Error> {
         log!("adding booking {self:?}");
-        let db = DB.get().expect("db not connected");
+        let db = DB
+            .get()
+            .ok_or_else(|| Error::ConnectionError("db not connected".into()))?;
         let res: Result<Self, _> = db.create(BOOKING).content(self).await;
 
         match res {
-            Ok(stuff @ Booking { .. }) => {
-                log!("OK: {stuff:?}");
-                Ok(stuff)
-            }
-            Err(err) => {
-                log!("OH NO: {err:?}");
-                Err("fucksticks".into()) //todo bettor error!
-            }
+            Ok(b) => Ok(b),
+            Err(err) => Err(Error::InsertFailed(err.to_string())),
         }
+    }
+}
+
+#[async_trait]
+impl Updatable for User {
+    async fn update(&self) -> Result<(), Error> {
+        let db = get_db()?;
+        let id = self
+            .id
+            .clone()
+            .ok_or_else(|| Error::UpdateFailed("id required".into()))?;
+
+        db.update(id)
+            .content(self)
+            .await
+            .map_err(|e| Error::UpdateFailed(e.to_string()))
+            .map(|_: User| ())
     }
 }
