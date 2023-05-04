@@ -1,7 +1,5 @@
-use std::time::{self, SystemTime};
-
+use std::time::{Duration};
 use crate::log::log;
-// use anyhow::Ok;
 use async_trait::async_trait;
 use once_cell::sync::OnceCell;
 use serde::{Deserialize, Serialize};
@@ -9,9 +7,11 @@ use surrealdb::engine::remote::http::{Client, Http};
 use surrealdb::opt::auth::Root;
 use surrealdb::sql::Thing;
 use surrealdb::Surreal;
+use std::fmt::Debug;
 
-const USER: &str = "user";
-const BOOKING: &str = "booking";
+
+
+//////////////////////////////////////////////////////////////////// Errors
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub enum Error {
@@ -36,15 +36,49 @@ impl core::fmt::Display for Error {
     }
 }
 
-#[async_trait]
-pub trait Addable: Sized {
-    async fn add(&self) -> Result<Self, Error>;
+//////////////////////////////////////////////////////////////////// Traits
+
+pub trait Entity: Sized + Send + Sync + Debug + Clone + Serialize + for<'de> Deserialize<'de>
+{
+    const TABLE: &'static str;
+    fn get_id(&self) -> Option<Thing>;
 }
 
 #[async_trait]
-pub trait Updatable: Sized {
-    async fn update(&self) -> Result<(), Error>;
+pub trait Addable: Entity
+{
+    async fn add(&self) -> Result<Self, Error> {
+        log!("adding {} {self:?}", Self::TABLE);
+        let db = get_db()?;
+        let res: Result<Self, _> = db.create(Self::TABLE).content(self).await;
+
+        match res {
+            Ok(b) => Ok(b),
+            Err(err) => Err(Error::InsertFailed(err.to_string())),
+        }
+    }
 }
+
+#[async_trait]
+pub trait Updatable: Entity
+where Self: 
+{    
+    async fn update(&self) -> Result<(), Error> {
+        let db = get_db()?;
+        let id = self
+            .get_id()
+            .clone()
+            .ok_or_else(|| Error::UpdateFailed("id required".into()))?;
+
+        db.update(id)
+            .content(self)
+            .await
+            .map_err(|e| Error::UpdateFailed(e.to_string()))
+            .map(|_: Self| ())
+    }
+}
+
+//////////////////////////////////////////////////////////////////// Database
 
 pub static DB: OnceCell<Surreal<Client>> = OnceCell::new();
 
@@ -54,6 +88,8 @@ pub fn get_db() -> Result<&'static Surreal<Client>, Error> {
         .ok_or_else(|| Error::ConnectionError("db not connected".into()))?;
     Ok(db)
 }
+
+//////////////////////////////////////////////////////////////////// Users
 
 #[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Clone, Default)]
 #[allow(dead_code)]
@@ -84,38 +120,38 @@ pub async fn connect() -> Result<(), Error> {
         .map_err(|e| Error::NsError(e.to_string()))?;
     DB.set(db).expect("database already connected");
 
-    // make_dummy_data().await.unwrap();
     Ok(())
 }
 
 pub async fn get_users() -> Result<Vec<User>, Error> {
     let db = get_db()?;
-    db.select(USER)
+    db.select(User::TABLE)
         .await
         .map_err(|e| Error::SelectFailed(e.to_string()))
 }
 
-#[async_trait]
-impl Addable for User {
-    async fn add(&self) -> Result<User, Error> {
-        let db = get_db()?;
-        let res: Result<Self, _> = db.create(USER).content(self).await;
 
-        match res {
-            Ok(u) => Ok(u),
-            Err(err) => Err(Error::UpdateFailed(err.to_string())),
-        }
+#[async_trait]
+impl Updatable for User {}
+impl Addable for User {}
+impl Entity for User {
+    const TABLE: &'static str = "user";
+    fn get_id(&self) -> Option<Thing> {
+        return self.id.clone()
     }
 }
 
+//////////////////////////////////////////////////////////////////// Bookings
+
+#[serde_with::serde_as]
 #[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Clone)]
-#[allow(dead_code)]
 pub struct Booking {
     #[serde(skip_serializing)]
-    id: Option<String>,
+    pub id: Option<Thing>,
     pub user: String,
-    pub start_time: time::SystemTime,
-    pub duration: time::Duration,
+    pub start_time: chrono::DateTime<chrono::Utc>,
+    #[serde_as(as = "serde_with::DurationSeconds<i64>")]
+    pub duration: chrono::Duration,
 }
 
 impl Default for Booking {
@@ -123,8 +159,8 @@ impl Default for Booking {
         Self {
             id: Default::default(),
             user: Default::default(),
-            start_time: time::SystemTime::now(),
-            duration: Default::default(),
+            start_time: chrono::Utc::now(),
+            duration: chrono::Duration::seconds(0),
         }
     }
 }
@@ -132,15 +168,15 @@ impl Default for Booking {
 pub async fn get_bookings() -> Result<Vec<Booking>, Error> {
     let db = get_db()?;
     let mut bookings: Vec<Booking> = db
-        .select(BOOKING)
+        .select(Booking::TABLE)
         .await
         .map_err(|e| Error::SelectFailed(e.to_string()))?;
 
     let u3 = Booking {
         id: None,
-        user: "".into(),
-        start_time: SystemTime::now(),
-        duration: time::Duration::from_secs(60 * 60),
+        user: "fred".into(),
+        start_time: chrono::Utc::now(),
+        duration: chrono::Duration::seconds(30 * 60),
     };
     bookings.push(u3);
     println!("{bookings:?}");
@@ -150,33 +186,16 @@ pub async fn get_bookings() -> Result<Vec<Booking>, Error> {
 
 #[async_trait]
 impl Addable for Booking {
-    async fn add(&self) -> Result<Booking, Error> {
-        log!("adding booking {self:?}");
-        let db = DB
-            .get()
-            .ok_or_else(|| Error::ConnectionError("db not connected".into()))?;
-        let res: Result<Self, _> = db.create(BOOKING).content(self).await;
-
-        match res {
-            Ok(b) => Ok(b),
-            Err(err) => Err(Error::InsertFailed(err.to_string())),
-        }
-    }
 }
 
 #[async_trait]
-impl Updatable for User {
-    async fn update(&self) -> Result<(), Error> {
-        let db = get_db()?;
-        let id = self
-            .id
-            .clone()
-            .ok_or_else(|| Error::UpdateFailed("id required".into()))?;
+impl Updatable for Booking {
+}
 
-        db.update(id)
-            .content(self)
-            .await
-            .map_err(|e| Error::UpdateFailed(e.to_string()))
-            .map(|_: User| ())
+impl Entity for Booking {
+    const TABLE: &'static str = "booking";
+    fn get_id(&self) -> Option<Thing> {
+        return self.id.clone()
     }
 }
+

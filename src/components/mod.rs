@@ -1,5 +1,9 @@
 mod app;
+mod booking_form;
+mod booking_list;
+mod booking_page;
 mod error_msg;
+mod home_page;
 mod modal_add;
 mod modal_edit;
 mod modal;
@@ -9,7 +13,11 @@ mod user_list;
 mod user_page;
 
 pub use app::*;
+pub use booking_form::*;
+pub use booking_list::*;
+pub use booking_page::*;
 pub use error_msg::*;
+pub use home_page::*;
 pub use modal_add::*;
 pub use modal_edit::*;
 pub use modal::*;

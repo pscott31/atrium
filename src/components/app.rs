@@ -1,7 +1,8 @@
 use leptos::*;
+use leptos_router::*;
 use serde::{Deserialize, Serialize};
 use crate::store;
-use super::{UserPage, UserPageProps, Navbar, NavbarProps};
+use super::{UserPage, UserPageProps, Navbar, NavbarProps, HomePage, HomePageProps, BookingPage, BookingPageProps};
 
 
 #[derive(Serialize, Deserialize, Clone, PartialEq, Debug)]
@@ -42,7 +43,8 @@ pub fn App(cx: Scope) -> impl IntoView {
     });
 
     view! { cx,
-        <div>
+        <div id="root">
+        <Router>
             <Navbar/>
             <section class="section">
                 <div class="container">
@@ -52,13 +54,33 @@ pub fn App(cx: Scope) -> impl IntoView {
                             view! { cx, "loading" }
                         }
                     >
-                        <UserPage/>
+                        <Routes>
+                            <Route
+                                path="/"
+                                view=|cx| {
+                                    view! { cx, <HomePage/> }
+                                }
+                            />
+                            <Route
+                                path="/users"
+                                view=|cx| {
+                                    view! { cx, <UserPage/> }
+                                }
+                            />
+                            <Route
+                            path="/bookings"
+                            view=|cx| {
+                                view! { cx, <BookingPage/> }
+                            }
+                        />
+                        </Routes>
                     </Show>
                 </div>
             </section>
             <footer>
                 <div>"database: " {move || conn_state().to_string()}</div>
             </footer>
+        </Router>
         </div>
     }
 }

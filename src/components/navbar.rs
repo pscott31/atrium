@@ -1,4 +1,5 @@
 use leptos::*;
+use leptos_router::*;
 
 extern crate console_error_panic_hook;
 
@@ -18,8 +19,9 @@ pub fn Navbar(cx: Scope) -> impl IntoView {
             </div>
             <div class="navbar-menu">
                 <div class="navbar-start">
-                    <a class="navbar-item">"Home"</a>
-                    <a class="navbar-item">"Users"</a>
+                    <A href="/" class="navbar-item">"Home"</A>
+                    <A href="/users" class="navbar-item">"Users"</A>
+                    <A href="/bookings" class="navbar-item">"Bookings"</A>
                 </div>
             </div>
         </nav>

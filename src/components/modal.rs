@@ -5,7 +5,7 @@ pub fn Modal<F, IV>(
     cx: Scope,
     is_active: RwSignal<bool>,
     buttons: F,
-    title: &'static str,
+    title: String,
     children: Children,
 ) -> impl IntoView
 where

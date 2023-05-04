@@ -48,7 +48,7 @@ where
     };
 
     view! { cx,
-        <Modal is_active=is_active title="Edit User" buttons=buttons>
+        <Modal is_active=is_active title=format!("Edit {}", T::TABLE)  buttons=buttons>
         <ErrorMsg title="Error updating user" error=error/>
             {form(cx, thing)}
         </Modal>

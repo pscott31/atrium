@@ -12,7 +12,7 @@ pub fn ModalAdd<T, F, G>(
     form: G,
 ) -> impl IntoView
 where
-    T: Addable + Default + Clone + 'static,
+    T: Addable + 'static,
     G: Fn(Scope, RwSignal<T>) -> F + 'static,
     F: IntoView,
 {
@@ -47,7 +47,7 @@ where
     };
 
     view! { cx,
-        <Modal is_active=is_active title="Add User" buttons=buttons>
+        <Modal is_active=is_active title=format!("Add {}", T::TABLE) buttons=buttons>
             {form(cx, thing)}
         </Modal>
     }
