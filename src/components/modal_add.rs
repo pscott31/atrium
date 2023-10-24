@@ -37,7 +37,7 @@ where
 
     let on_save_clicked = move |_| {
         log!("save pressed");
-        save_action.dispatch(thing.get().clone())
+        save_action.dispatch(thing.get())
     };
 
     let buttons = move || {

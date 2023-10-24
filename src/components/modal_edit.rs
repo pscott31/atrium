@@ -1,6 +1,6 @@
 use leptos::*;
 
-use super::{Modal, ModalProps, ErrorMsg, ErrorMsgProps};
+use super::{ErrorMsg, ErrorMsgProps, Modal, ModalProps};
 use crate::store::Updatable;
 
 #[component]
@@ -15,7 +15,6 @@ where
     G: Fn(Scope, RwSignal<T>) -> F + 'static,
     F: IntoView,
 {
-
     let error = create_rw_signal(cx, None);
 
     let update_action = create_action(cx, move |input: &T| {
@@ -23,7 +22,7 @@ where
         async move {
             log!("update away! {:?}", input);
             match input.update().await {
-                Err(err) => {
+                    Err(err) => {
                     log!("SETTING ERROR {:?}", err);
                     error.set(Some(err.to_string()))},
                 Ok(_) => is_active.set(false)
@@ -36,7 +35,7 @@ where
 
     let on_save_clicked = move |_| {
         log!("save pressed");
-        update_action.dispatch(thing.get().clone())
+        update_action.dispatch(thing.get())
     };
 
     let buttons = move || {
