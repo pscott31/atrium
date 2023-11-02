@@ -1,0 +1,91 @@
+html {
+    font-size: 16px;
+    height: 100%;
+}
+
+body {
+    margin: 0;
+    min-height: var(--leptonic-vh, 100vh);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+@import "../generated/leptonic/leptonic-themes";
+
+
+
+[data-theme="light"] {
+    --brand-color: #94155f;
+    --font-family: Iosevka Fixed Web, sans-serif;
+    --book-menu-background-color: var(--box-background-color);
+    --book-menu-header-color: #3e3434;
+    --book-menu-item-color: #3e3434;
+    --book-menu-item-active-color: var(--std-text-bright);
+    --book-menu-item-hover-color: var(--std-text-bright);
+    --app-bar-background-color: var(--brand-color);
+    --app-bar-height: 3.5em;
+}
+
+[data-theme="dark"] {
+    --brand-color: #94155f;
+    --font-family: Iosevka Fixed Web, sans-serif;
+    --book-menu-background-color: var(--box-background-color);
+    --book-menu-header-color: var(--std-text-bright);
+    --book-menu-item-color: var(--std-text-bright);
+    --book-menu-item-active-color: var(--std-text-bright);
+    --book-menu-item-hover-color: var(--std-text-bright);
+    --app-bar-background-color: var(--brand-color);
+    --app-bar-height: 3.5em;
+}
+
+
+#layout-lower {
+    display: flex;
+    flex-direction: row;
+    flex-grow: 1;
+    width: 100%;
+    padding: 0;
+    overflow-y: auto;
+
+    #layout-content {
+        padding-left: 2em;
+    }
+
+    #layout-sidebar {
+        overflow-y: auto;
+        padding: 0.5em;
+        margin: 0;
+        padding-top: 2em;
+
+        #nav-stack {
+            align-items: stretch
+        }
+
+        a {
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            gap: 1em;
+            color: var(--book-menu-item-color);
+            font-weight: 400;
+            border-radius: 0.4em;
+            padding: 1em 1em;
+            margin: 0.075em 0.75em;
+            cursor: pointer;
+            user-select: none;
+            flex-grow: 1;
+
+        }
+
+        a[aria-current] {
+            background-color: var(--brand-color);
+            color: var(--book-menu-item-active-color);
+        }
+
+        a:hover {
+            background-color: var(--brand-color);
+            color: var(--book-menu-item-hover-color);
+        }
+    }
+}

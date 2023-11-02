@@ -1,22 +1,6 @@
-[package]
-name = "atrium2"
-version = "0.1.0"
-edition = "2021"
+[workspace]
+ resolver = "2"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[dependencies]
-anyhow = "1.0.70"
-async-trait = "0.1.68"
-chrono = { version = "0.4.24", features = ["wasmbind", "serde"] }
-chrono-humanize = "0.2.2"
-console_error_panic_hook = "0.1.7"
-leptos = "0.2.5"
-leptos_router = {version="0.2.5", features=["csr"]}
-once_cell = "1.17.1"
-serde = {version="1.0.160", features=["derive"]}
-serde_with = {version="3.0.0", features=["chrono"]}
-surrealdb = {git="https://github.com/surrealdb/surrealdb.git", branch = "main", features=["protocol-http"] }
-# surrealdb = {default-features = false, features=["http", "protocol-http", "protocol-ws", "kv-mem"]} 
-wasm-bindgen = "0.2.84"
-wasm-timer = "0.2.5"
+ members = ["atrium_leptonic"]
+ #  subcrate = ["v1"]
+ #  members = ["v1", "v2"]
